@@ -1,0 +1,59 @@
+<!-- 双语切换悬浮按钮CSS+JS，自动注入每个页面head -->
+<style>
+.lang-switch-panel {
+    position: fixed;
+    top: 16px;
+    right: 24px;
+    z-index: 99999;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+.lang-switch-btn {
+    padding: 5px 14px;
+    border: none;
+    border-radius: 4px;
+    background: #7AB02C;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+.lang-switch-btn:hover {
+    background: #689f26;
+}
+.text-en {
+    display: inline;
+}
+.text-cn {
+    margin: 6px 0 10px 18px;
+    padding: 4px 12px;
+    border-left: 3px solid #61B7CF;
+    color: #1f66aa;
+    font-size: 0.97em;
+    line-height: 1.6;
+}
+/* 代码块禁止翻译，高亮区分 */
+pre, code, kbd, samp, var {
+    font-family: Consolas,Monaco,monospace;
+    color: #c23030;
+}
+</style>
+
+<div class="lang-switch-panel">
+  <button class="lang-switch-btn" id="langToggle">隐藏中文翻译</button>
+</div>
+
+<script>
+let showChinese = true;
+const toggleBtn = document.getElementById("langToggle");
+const allCnText = document.querySelectorAll(".text-cn");
+toggleBtn.onclick = function(){
+    showChinese = !showChinese;
+    allCnText.forEach(block => {
+        block.style.display = showChinese ? "block" : "none";
+    });
+    toggleBtn.innerText = showChinese ? "隐藏中文翻译" : "显示中文翻译";
+};
+</script>
