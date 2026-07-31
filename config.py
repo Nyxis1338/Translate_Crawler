@@ -25,3 +25,9 @@ RETRY_TIMES = 2  # 请求重试次数
 
 # 静态资源白名单（全部允许下载，包含js/css/svg/png）
 STATIC_SUFFIX = (".js", ".css", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".woff", ".ttf")
+
+# 缓存相关配置
+CACHE_HTML_DIR = "cache_html"
+TASK_JSON_PATH = "translate_task.json"
+RESULT_JSON_PATH = "translate_result.json"
+MAX_TRANS_LEN = 2000

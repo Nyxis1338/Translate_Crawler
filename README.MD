@@ -1,14 +1,18 @@
 ## 爬虫 + 资源下载 + 翻译 + 生成双语文档一体化
 ```
-jsplumb-docs-crawler/
-├─ main.py               # 主程序（爬虫+翻译+页面生成一体化）
-├─ api_terms.json          # 统一中英API术语对照表（单独分离便于修改）
-├─ template.html         # 双语切换UI组件（css+js，自动注入所有页面）
-├─ .gitignore
-└─ output/               # 程序自动生成输出目录
-   ├─ raw_en/            # 原始英文网页（爬取源文件）
-   ├─ assets/            # 本地静态资源（css/js/image）
-   └─ bilingual_docs/    # 最终成品：离线双语完整文档站
+Crawler-Translate/
+├─ cache_html/        # 原始抓取页面缓存（阶段1输出）
+├─ translate_task.json # 待翻译文本任务清单
+├─ translate_result.json # 翻译完成映射结果
+├─ output/            # 最终双语页面（阶段3输出）
+├─ main.py            # 拆分3个执行入口：抓取/翻译/生成页面
+├─ config.py
+├─ secret_config.py
+├─ test_translate_api.py
+├─ test_static_download.py
+├─ api_terms.json
+└─ .gitignore
+
 ```
 ### 以上结构为最初的结构内容
 后期出现的文件，均是用程序生成的
@@ -21,7 +25,11 @@ python main.py
 ### 安装依赖
 ```
 pip install requests beautifulsoup4 lxml deepl
+pip install tencentcloud-sdk-python
+pip install --upgrade tencentcloud-sdk-python-common==3.0.415
+pip install --upgrade tencentcloud-sdk-python-tmt==3.0.415
 ```
+common tmt 两个库的版本号要一致！！！
 
 
 ### 示例替换谷歌翻译： 

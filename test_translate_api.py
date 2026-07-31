@@ -5,6 +5,10 @@ import time
 import requests
 import deepl
 import config
+from tencentcloud.common import credential
+from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
+from tencentcloud.tmt.v20180321 import tmt_client, models
+
 
 test_text = "Container, endpoint, draggable node in jsPlumb 6.x"
 
@@ -101,13 +105,36 @@ def test_baidu():
 
 def test_tencent():
     print("\n--- 4. 测试腾讯翻译 ---")
+
     sid = config.TRANSLATE_TENCENT["secret_id"]
-    sk = config.TRANSLATE_TENCENT["secret_key"]
-    if sid and sk:
-        print("✅ 密钥已配置，可使用")
-        return True
-    print("❌ 腾讯密钥未填写")
-    return False
+    skey = config.TRANSLATE_TENCENT["secret_key"]
+    if not sid or not skey:
+        print("❌ 未配置腾讯翻译密钥，跳过")
+        return False
+    try:
+        cred = credential.Credential(sid, skey)
+        # 地域换成你自己的，ap-beijing / ap-guangzhou
+        client = tmt_client.TmtClient(cred, "ap-beijing")
+
+        
+        req = models.TextTranslateRequest()
+        params = {
+            "SourceText": test_text,
+            "Source": "en",      # 源语言
+            "Target": "zh",      # 目标语言
+            "ProjectId": 0       # 项目ID，默认0
+        }
+        req.from_json_string(json.dumps(params))
+
+        # 4. 调用接口
+        resp = client.TextTranslate(req)
+        
+        # 5. 处理返回结果
+        print("翻译结果:", resp.TargetText)
+        print("请求ID:", resp.RequestId)
+        
+    except TencentCloudSDKException as err:
+        print("错误信息:", err)
 
 if __name__ == "__main__":
     test_deepl()
