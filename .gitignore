@@ -3,6 +3,7 @@ secret_config.py
 *.secret.py
 # 生成输出目录
 output/
+cache_html/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

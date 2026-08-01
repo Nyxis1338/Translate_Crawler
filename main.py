@@ -171,14 +171,17 @@ def save_static_file(resource_url: str):
     logger.error(f"静态资源最终失败：{resource_url}")
 
 def parse_page_links(html: str, base_url: str):
-    """提取站内页面链接"""
+    """提取站内页面链接，仅保留docs文档页面""" 
     soup = BeautifulSoup(html, "html.parser")
     links = []
     for a in soup.find_all("a", href=True):
         href = str(a["href"])
         full_url = urljoin(base_url, href)
+        # 限定域名、无锚点、仅文档路径
         if full_url.startswith(config.BASE_URL) and "#" not in full_url:
-            links.append(full_url)
+            # 只抓取 /docs/ 下的文档，过滤demo/example/test
+            if "/docs/" in full_url.lower():
+                links.append(full_url)
     return list(set(links))
 
 # ==================== 阶段1：仅抓取缓存原始HTML，生成翻译任务 ====================
