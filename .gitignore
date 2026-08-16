@@ -4,6 +4,11 @@ secret_config.py
 # 生成输出目录
 output/
 cache_html/
+
+# 其他
+translate_result.json
+translate_task.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
