@@ -6,11 +6,10 @@ try:
         DEEPL_KEY,
         DEEPL_FREE_PLAN,
         TRANSLATE_BAIDU,
-        TRANSLATE_TENCENT,
-        YOUDAO
+        TRANSLATE_TENCENT
+        # 已删除 YOUDAO
     )
 except ImportError:
-    # 缺失密钥文件友好提示
     raise Exception("缺少 secret_config.py 密钥文件！请复制模板创建并填入翻译API密钥")
 
 # ===================== 公共爬虫配置（可上传git）=====================
@@ -31,3 +30,6 @@ CACHE_HTML_DIR = "cache_html"
 TASK_JSON_PATH = "translate_task.json"
 RESULT_JSON_PATH = "translate_result.json"
 MAX_TRANS_LEN = 2000
+
+# 在 config.py 中添加
+ALLOWED_PAGE_PREFIXES = ["lib/", ""]  # 空字符串表示根页面

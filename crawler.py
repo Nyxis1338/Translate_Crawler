@@ -72,36 +72,26 @@ def parse_page_links(html: str, base_url: str):
 # ==================== 提取正文块 ====================
 def extract_blocks(soup, container_selector='main'):
     """
-    从指定的容器选择器内提取文本块，每个块对应一个语义段落。
-    返回列表，每个元素为一个文本字符串。
+    提取正文容器中的主要文本段落（段落和标题），忽略列表等细碎内容。
     """
     container = soup.select_one(container_selector)
     if not container:
         container = soup.body or soup
 
+    # 可选：先移除不需要的部分（如侧边栏、页脚等）
+    for unwanted in container.find_all(['aside', 'footer', 'nav']):
+        unwanted.decompose()
+
     blocks = []
-    block_tags = ['p', 'div', 'li', 'td', 'th', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                  'blockquote', 'figcaption', 'section', 'article']
-    for elem in container.find_all(block_tags):
+    # 只提取 <p> 和 <h1>-<h6>
+    for elem in container.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
         if should_skip_element(elem):
             continue
-        text_parts = []
-        # 提取该元素内所有未被跳过的文本
-        for child in elem.descendants:
-            if isinstance(child, NavigableString):
-                parent = child.parent
-                if should_skip_element(parent):
-                    continue
-                text = child.strip()
-                if text:
-                    text_parts.append(text)
-            elif child.name and should_skip_element(child):
-                # 删除子代码块，防止它们混入文本
-                child.extract()
-        full_text = ' '.join(text_parts).strip()
-        if full_text:
-            full_text = ' '.join(full_text.split())  # 合并空白
-            blocks.append(full_text)
+        text = elem.get_text(strip=True)
+        if text:
+            # 合并空白
+            text = ' '.join(text.split())
+            blocks.append(text)
     return blocks
 
 # ==================== 阶段1：抓取缓存 ====================
@@ -200,3 +190,49 @@ def crawl_only_save_html():
         save_tasks(task_list)
 
     logger.info(f"抓取完成，生成翻译任务总数：{len(task_list)}，缓存目录：{config.CACHE_HTML_DIR}")
+
+# ==================== 阶段5：从缓存中生成翻译任务 ====================
+def regenerate_tasks_from_cache():
+    """
+    从已有的 cache_html 目录中提取文本任务，重新生成 translate_task.json
+    """
+    from utils import init_task_file, save_tasks, split_long_text, logger
+    import config
+    import os
+    from bs4 import BeautifulSoup
+
+    init_task_file()
+    task_list = []
+    existing_task_ids = set()
+
+    for root, _, filenames in os.walk(config.CACHE_HTML_DIR):
+        for fname in filenames:
+            if not fname.endswith(".html"):
+                continue
+            file_path = os.path.join(root, fname)
+            page_key = os.path.relpath(file_path, config.CACHE_HTML_DIR)
+            with open(file_path, "r", encoding="utf-8") as f:
+                html = f.read()
+            soup = BeautifulSoup(html, "html.parser")
+            # 使用新的 extract_blocks 提取段落
+            blocks = extract_blocks(soup, container_selector='main')
+            for raw_text in blocks:
+                base_task_id = f"{page_key}_{uuid.uuid4().hex[:12]}"
+                text_segments = split_long_text(raw_text, config.MAX_TRANS_LEN)
+                for idx, seg in enumerate(text_segments):
+                    sub_task_id = f"{base_task_id}_part{idx}"
+                    if sub_task_id in existing_task_ids:
+                        continue
+                    task_list.append({
+                        "task_id": sub_task_id,
+                        "parent_task_id": base_task_id,
+                        "page_key": page_key,
+                        "raw_full_text": raw_text,
+                        "segment_text": seg,
+                        "translated_text": "",
+                        "status": "pending"
+                    })
+                    existing_task_ids.add(sub_task_id)
+
+    save_tasks(task_list)
+    logger.info(f"重新生成任务完成，共 {len(task_list)} 个文本片段")
