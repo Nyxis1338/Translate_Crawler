@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+
+import sys
+import os
+# 将工作目录切换到项目根目录（tests 的父目录）
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import requests
 from urllib.parse import urljoin
 import config

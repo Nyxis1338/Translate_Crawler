@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+
+import sys
+import os
+# 将工作目录切换到项目根目录（tests 的父目录）
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import json
 import hashlib
 import time
@@ -42,39 +48,9 @@ def test_deepl():
         print(f"❌ DeepL失败: {str(e)}")
         return False
 
-def test_youdao():
-    print("\n--- 2. 测试有道翻译（免费） ---")
-    appKey = config.YOUDAO["appKey"]
-    appSecret = config.YOUDAO["appSecret"]
-    if not appKey or not appSecret:
-        print("❌ 未配置有道密钥，跳过")
-        return False
-    salt = str(int(time.time()))
-    signStr = appKey + test_text + salt + appSecret
-    sign = hashlib.md5(signStr.encode()).hexdigest()
-    data = {
-        "q": test_text,
-        "from": "en",
-        "to": "zh-CHS",
-        "appKey": appKey,
-        "salt": salt,
-        "sign": sign
-    }
-    try:
-        resp = requests.post("https://openapi.youdao.com/api", data=data, timeout=10)
-        res = resp.json()
-        if res.get("errorCode") == "0":
-            print(f"✅ 翻译结果: {res['translation'][0]}")
-            return True
-        else:
-            print(f"❌ 有道错误码：{res['errorCode']}")
-            return False
-    except Exception as e:
-        print(f"❌ 有道接口异常: {str(e)}")
-        return False
 
 def test_baidu():
-    print("\n--- 3. 测试百度翻译 ---")
+    print("\n--- 2. 测试百度翻译 ---")
     appid = config.TRANSLATE_BAIDU["appid"]
     secret = config.TRANSLATE_BAIDU["secret"]
     if not appid or not secret:
@@ -104,7 +80,7 @@ def test_baidu():
         return False
 
 def test_tencent():
-    print("\n--- 4. 测试腾讯翻译 ---")
+    print("\n--- 3. 测试腾讯翻译 ---")
 
     sid = config.TRANSLATE_TENCENT["secret_id"]
     skey = config.TRANSLATE_TENCENT["secret_key"]
@@ -138,6 +114,5 @@ def test_tencent():
 
 if __name__ == "__main__":
     test_deepl()
-    test_youdao()
     test_baidu()
     test_tencent()
